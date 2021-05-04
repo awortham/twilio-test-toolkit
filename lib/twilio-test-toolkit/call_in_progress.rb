@@ -1,5 +1,5 @@
 require "twilio-test-toolkit/call_scope"
-  
+
 module TwilioTestToolkit
   # Models a call
   class CallInProgress < CallScope
@@ -7,6 +7,8 @@ module TwilioTestToolkit
     # * :method - specify the http method of the initial api call
     # * :call_sid - specify an optional fixed value to be passed as params[:CallSid]
     # * :is_machine - controls params[:AnsweredBy]
+    attr_reader :sid, :initial_path, :from_number, :to_number, :is_machine, :http_method
+
     def initialize(initial_path, from_number, to_number, options = {})
       # Save our variables for later
       @initial_path = initial_path
@@ -22,35 +24,19 @@ module TwilioTestToolkit
         @sid = options[:call_sid]
       end
 
+      if options[:is_machine].nil?
+        options[:is_machine] = @is_machine
+      end
+
+      if options[:method].nil?
+        options[:method] = @method
+      end
+
       # We are the root call
       self.root_call = self
 
       # Create the request
-      request_for_twiml!(@initial_path, :method => @method, :is_machine => @is_machine)
-    end
-
-    def sid
-      @sid
-    end      
-  
-    def initial_path
-      @initial_path
-    end
-  
-    def from_number
-      @from_number
-    end
-  
-    def to_number
-      @to_number
-    end
-  
-    def is_machine
-      @is_machine
-    end
-
-    def http_method
-      @method
+      request_for_twiml!(@initial_path, **options)
     end
   end
 end
